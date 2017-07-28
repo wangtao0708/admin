@@ -1,0 +1,599 @@
+﻿
+@{
+    ViewBag.Title = "营销管理系统";
+    Layout = "~/Areas/Sales/Views/Shared/_SalesLayout.cshtml";
+    var salesEntity = (ITGB.App.Entities.SalesOrderEntity)ViewData["SalesEntity"];
+}
+@using ITGB.App.SalesMgmt.BLL
+@section endScripts{
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+
+    <script src="~/content/js/app.js"></script>
+
+
+    <script>
+
+        $(document).ready(function () {
+            App.init();
+
+            $("#LiSailOrder").addClass("active");
+            $("#UlLiAllSailOrder").addClass("active");
+            if(@((salesEntity.State==3).ToString().ToLower())){
+                $(".order-info").css("display", "block")
+            }
+        });
+
+    </script>
+}
+<!-- BEGIN PAGE -->
+
+<div class="page-content">
+
+    <!-- BEGIN SAMPLE PORTLET CONFIGURATION MODAL FORM-->
+
+    <div id="portlet-config" class="modal hide">
+
+        <div class="modal-header">
+
+            <button data-dismiss="modal" class="close" type="button"></button>
+
+            <h3>portlet Settings</h3>
+
+        </div>
+
+        <div class="modal-body">
+
+            <p>Here will be a configuration form</p>
+
+        </div>
+
+    </div>
+
+    <!-- END SAMPLE PORTLET CONFIGURATION MODAL FORM-->
+    <!-- BEGIN PAGE CONTAINER-->
+
+    <div class="container-fluid">
+
+        <!-- BEGIN PAGE HEADER-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <h3 class="page-title">
+
+                    销售单详情
+
+                </h3>
+
+            </div>
+
+        </div>
+
+        <!-- END PAGE HEADER-->
+        <!-- BEGIN PAGE CONTENT-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <!-- BEGIN SAMPLE FORM PORTLET-->
+
+                <div class="portlet box blue">
+
+                    <div class="portlet-title">
+
+                        <div class="caption"><i class="icon-reorder"></i>销售单</div>
+
+                    </div>
+
+                    <div class="portlet-body form">
+
+                        <!-- BEGIN FORM-->
+
+                        <form action="Index" class="form-horizontal">
+
+                            <h4 class="form-section">销售信息</h4>
+                            <div class="control-group">
+
+                                <label class="control-label">项目名称：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@salesEntity.ProjectName</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">金额：</label>
+
+                                <div class="controls">
+
+                                    <div class="input-append">
+
+                                        <label class="control-right-label">@ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(salesEntity.ProjectMoney)</label>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="control-group">
+
+                                <label class="control-label">状态：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateName(salesEntity.State)</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">经手人：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@salesEntity.Handler</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">余额：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(salesEntity.ProjectCost)</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">备注：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @salesEntity.SalesOrderRemark.Descendants("remark").FirstOrDefault().Value
+                                    </label>
+
+                                </div>
+
+                            </div>
+                            @{
+                                if (salesEntity.State >= 2)
+                                {
+                                    <h4 class="form-section">订单信息</h4>
+                                    <div class="control-group">
+
+                                        <label class="control-label">方案确认时间：</label>
+
+                                        <div class="controls">
+
+                                            <label class="control-right-label">@(salesEntity.SchemeTime == null ? "" : ((DateTime)salesEntity.SchemeTime).ToString("yyyy-MM-dd"))</label>
+
+                                        </div>
+
+                                    </div>
+                            }
+                                if (salesEntity.State >= 3)
+                                {
+    <div class="control-group">
+
+        <label class="control-label">下单时间：</label>
+
+        <div class="controls">
+
+            <label class="control-right-label">@(salesEntity.OrderTime==null?"":((DateTime)salesEntity.OrderTime).ToString("yyyy-MM-dd"))</label>
+
+        </div>
+
+    </div>
+                                    if (salesEntity.State == 4)
+                                    {
+                                        // 销售完结
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">销售完结时间：</label>
+
+                                            <div class="controls">
+
+                                                <label class="control-right-label">@(salesEntity.CompleteTime == null ? salesEntity.EditTime == null ? "" : ((DateTime)salesEntity.EditTime).ToString("yyyy-MM-dd") : ((DateTime)salesEntity.CompleteTime).ToString("yyyy-MM-dd"))</label>
+
+                                            </div>
+
+                                        </div>
+                                    }
+                                    if (salesEntity.State == 5)
+                                    {
+                                        // 销售失败
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">销售失败时间：</label>
+
+                                            <div class="controls">
+
+                                                <label class="control-right-label">@(salesEntity.CompleteTime == null ? salesEntity.EditTime == null ? "" : ((DateTime)salesEntity.EditTime).ToString("yyyy-MM-dd") : ((DateTime)salesEntity.CompleteTime).ToString("yyyy-MM-dd"))</label>
+
+                                            </div>
+
+                                        </div>
+                                    }
+                                    <div class="control-group">
+
+                                        <label class="control-label">合同编号：</label>
+
+                                        <div class="controls">
+
+                                            <label class="control-right-label">@salesEntity.ContractNO</label>
+
+                                        </div>
+
+                                    </div>
+                                    <div class="control-group">
+
+                                        <label class="control-label">项目编码：</label>
+
+                                        <div class="controls">
+
+                                            <label class="control-right-label">@salesEntity.ProjectNO</label>
+
+                                        </div>
+
+                                    </div>
+                                }
+}
+                            <h4 class="form-section">客户信息</h4>
+                            <div class="control-group">
+
+                                <label class="control-label">公司名称：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@salesEntity.Customer.CustomerName</label>
+                                    
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">地址：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@salesEntity.Customer.CustomerAddress</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">行业：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@salesEntity.Customer.Industry</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">备注：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @salesEntity.Customer.CustomerRemark.Descendants("remark").FirstOrDefault().Value
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            <h4 class="form-section">联系人信息</h4>
+                            <div class="control-group">
+
+                                <label class="control-label">姓名：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@salesEntity.Contact.ContactName</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">邮箱：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@salesEntity.Contact.Email</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">电话：</label>
+
+                                <div class="controls">
+                                    
+                                    <label class="control-right-label">@salesEntity.Contact.Phone</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">QQ：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@salesEntity.Contact.QQ</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">微信：</label>
+
+                                <div class="controls">
+
+                                    <label class="control-right-label">@salesEntity.Contact.Weixin</label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">备注：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @salesEntity.Contact.ContactRemark.Descendants("remark").FirstOrDefault().Value
+                                    </label>
+                                </div>
+
+                            </div>
+
+                            <h4 class="form-section">其它信息</h4>
+
+                            <div class="control-group">
+
+                                <label class="control-label">销售人员：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @salesEntity.Employee.EmployName
+                                    </label>
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">创建时间：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @(((DateTime)salesEntity.AddTime).ToString("yyyy-MM-dd HH:mm:ss"))
+                                    </label>
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">问题：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @salesEntity.SalesOrderRemark.Descendants("question").FirstOrDefault().Value
+                                    </label>
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">备注：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @salesEntity.SalesOrderRemark.Descendants("remark1").FirstOrDefault().Value
+                                    </label>
+                                </div>
+
+                            </div>
+                            <h4 class="form-section">发票收款</h4>
+
+
+                            <div class="control-group">
+                                <div class="span8 responsive" data-tablet="span12" data-desktop="span8">
+
+                                    <table class="table table-striped table-bordered table-advance table-hover">
+
+                                        <thead>
+
+                                            <tr>
+
+                                                <th class="hidden-480"> 发票编号</th>
+
+                                                <th> 金额</th>
+
+                                                <th class="hidden-phone"> 开发票时间</th>
+
+                                                <th> 收款金额</th>
+
+                                                <th> 状态</th>
+                                                
+                                            </tr>
+
+                                        </thead>
+
+                                        <tbody>
+                                            @{
+                                                foreach (var item in (List<ITGB.App.Entities.ReceiptEntity>)ViewData["ReceiptList"])
+                                                {
+                                                    <tr>
+                                                        <td class="hidden-480">
+                                                            @{
+                                                    if (item.IsPayment != true && item.ReceiptTime < DateTime.Now.AddMonths(-2))
+                                                    {
+                                                        <div class="danger"></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="success"></div>
+                                                    }
+                                                            }
+                                                            @item.ReceiptNO
+                                                        </td>
+                                                        <td>@ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(item.ReceitpMoney)</td>
+                                                        @{
+                                                    if (item.ReceiptTime != null)
+                                                    {
+                                                        <td class="hidden-phone">@(((DateTime)item.ReceiptTime).ToString("yyyy-MM-dd"))</td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td class="hidden-phone"></td>
+                                                    }
+                                                    <td>@Common.DecimalFormart(PaymentItemsManager.GetList(s => s.ReceiptID == item.ReceiptID).Sum(s => s.PaymentMoney))</td>
+                                                    // 状态
+                                                    if (item.ReceiptState == 1)
+                                                    {
+                                                        <td><span class="btn mini grey" style="cursor:default"> 未收款</span></td>
+                                                    }
+                                                    else if (item.ReceiptState == 2)
+                                                    {
+                                                        <td><span class="btn mini purple" style="cursor:default"> 部分收款</span></td>
+                                                    }
+                                                    if (item.ReceiptState == 3)
+                                                    {
+                                                        <td><span class="btn mini green" style="cursor:default"> 已收全款</span></td>
+                                                    }
+                                                        }
+
+                                                    </tr>
+                                                }
+                                            }
+
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+
+
+                            <h4 class="form-section">变更信息</h4>
+                            <div class="control-group">
+                                <div class="span8 responsive" data-tablet="span12" data-desktop="span8">
+
+                                    <table class="table table-striped table-bordered table-advance table-hover">
+
+                                        <thead>
+                                            <tr>
+
+                                                <th><i class="icon-calendar"></i> 变更时间</th>
+
+                                                <th><i class="icon-tags"></i> 变更详情</th>
+                                                
+                                            </tr>
+
+                                        </thead>
+
+                                        <tbody>
+                                            @{
+                                                foreach (ITGB.App.Entities.EditModel item in (List<ITGB.App.Entities.EditModel>)ViewData["SalesHistoryList"])
+                                                {
+                                                    
+                                                    <tr>
+
+                                                        <td class="highlight" style=" vertical-align:top">
+
+                                                            <div class="success"></div>
+
+                                                            <span style="padding-left:10px;">@(((DateTime)item.EditTime).ToString("yyyy-MM-dd HH:mm:ss"))</span>
+
+                                                        </td>
+
+                                                        <td>
+                                                            @{
+                                                                if (!string.IsNullOrEmpty(item.EditInfo))
+                                                                {
+                                                                    foreach (string s in item.EditInfo.Split('|'))
+                                                                    {
+                                                            if (s.Contains(" 变更为 ")) { 
+                                                            <p>@s.Substring(0,s.IndexOf(" 变更为 ")) <b>变更为</b> @s.Substring(s.IndexOf(" 变更为 ")+5)</p>
+                                                            }
+                                                            else
+                                                            {
+                                                            <p>@s</p>
+                                                            }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                        <p>无变更信息</p>
+                                                                }
+                                                            }
+                                                        </td>
+                                                
+                                                    </tr>
+                                                }
+                                            }
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+                                <div class="form-actions">
+                                    
+                                    <button type="button" class="btn" onclick="App.goBack()">返回</button>
+                                </div>
+
+</form>
+
+                        <!-- END FORM-->
+
+                    </div>
+
+                </div>
+
+                <!-- END SAMPLE FORM PORTLET-->
+
+            </div>
+
+        </div>
+        <!-- END PAGE CONTENT-->
+
+    </div>
+
+    <!-- END PAGE CONTAINER-->
+
+</div>
+
+<!-- END PAGE -->
+
+

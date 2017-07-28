@@ -1,0 +1,39 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+
+@{
+    ViewBag.Title = "错误";
+    Layout = "~/Views/Shared/_LoggedInLayout.cshtml";
+}
+
+
+<div class="row-fluid">
+
+    <div class="span12 page-404">
+
+        <div class="number">
+
+            404
+
+        </div>
+
+        <div class="details">
+            <h3>
+                @HttpContext.Current.Application.Get("Message")<br />
+            </h3>
+            <div>
+                @{
+                    var stacks = HttpContext.Current.Application.Get("StackTrace").ToString().Trim().Split('在');
+                    for (int i = 1; i < stacks.Length; i++)
+                    {
+                        <p>  在 @stacks[i]</p>
+                    }
+                }
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+

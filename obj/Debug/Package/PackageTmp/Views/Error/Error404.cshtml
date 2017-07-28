@@ -1,0 +1,27 @@
+﻿@{
+    ViewBag.Title = "错误： "+ HttpContext.Current.Application.Get("Message");
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+    <div class="row-fluid" style="background-color:white; height:780px;">
+
+        <div class="span12 page-404">
+            <div class="details">
+                <h3 style="text-indent:24px;">
+                    错误： @HttpContext.Current.Application.Get("Message")<br />
+                </h3>
+                <div>
+                    @{
+                        var stacks = HttpContext.Current.Application.Get("StackTrace").ToString().Trim().Split('在');
+                        for (int i = 1; i < stacks.Length; i++)
+                        {
+                            <p style="text-indent:24px;">  在 @stacks[i]</p>
+                        }
+                    }
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>

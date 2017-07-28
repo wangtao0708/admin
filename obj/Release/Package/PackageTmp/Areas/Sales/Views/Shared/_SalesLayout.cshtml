@@ -1,0 +1,153 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<!-- BEGIN SIDEBAR -->
+
+<div class="page-sidebar nav-collapse collapse">
+
+    <!-- BEGIN SIDEBAR MENU -->
+
+    <ul class="page-sidebar-menu">
+
+        <li>
+
+            <!-- BEGIN SIDEBAR TOGGLER BUTTON -->
+
+            <div class="sidebar-toggler hidden-phone"></div>
+
+            <!-- BEGIN SIDEBAR TOGGLER BUTTON -->
+
+        </li>
+
+        <li>
+
+            <br />
+
+        </li>
+
+        <li id="LiHome" class="start ">
+
+            <a href="~/sales">
+
+                <i class="icon-home"></i>
+
+                <span class="title">首页</span>
+
+                <span class="selected"></span>
+
+            </a>
+
+        </li>
+
+        <li id="LiSailOrder" class="">
+
+            <a href="javascript:;">
+
+                <i class="icon-cogs"></i>
+
+                <span class="title">销售单</span>
+
+                <span class="arrow "></span>
+
+            </a>
+
+            <ul class="sub-menu">
+
+                <li id="UlLiAllSailOrder">
+
+                    <a href="~/Sales/SalesOrder/Index">
+
+                        所有销售单
+                    </a>
+
+                </li>
+                @{
+
+                    if (Session["AccountModel"] != null)
+                    {
+                        var employ = (Session["AccountModel"] as ITGB.App.SalesMgmt.Models.AccountModel).Employ;
+                        if (employ.DeptID == "0104" || employ.DeptID == "0105")
+                        {
+                            <li id="Create">
+
+                                <a href="~/Sales/SalesOrder/Create">
+
+                                    新建销售机会
+                                </a>
+
+                            </li>
+                        }
+                    }
+                }
+
+            </ul>
+
+        </li>
+
+        <li id="report" class="last ">
+
+            <a href="javascript:;">
+
+                    <i class="icon-bar-chart"></i>
+
+                    <span class="title">报表</span>
+
+                <span class="arrow "></span>
+
+                </a>
+
+                <ul class="sub-menu">
+
+                    <li id="SalesCompete">
+
+                        <a href="~/Sales/Report/SalesCompete">
+
+                            各销售人员状态对比
+                        </a>
+
+                    </li>
+
+                    <li id="SalesTargetCompletion">
+
+                        <a href="~/Sales/Report/SalesTargetCompletion">
+
+                            销售人员每季度目标与完成情况对比
+                        </a>
+
+                    </li>
+
+                    <li id="ClosedSalesOrderAnalysis">
+
+                        <a href="~/Sales/Report/ClosedSalesOrderAnalysis">
+
+                            销售人员完结订单各状态对比
+                        </a>
+
+                    </li>
+                    <li id="SalesBehaviorAnalysis">
+
+                        <a href="~/Sales/Report/SalesBehaviorAnalysis">
+
+                            销售行为分析
+                        </a>
+
+                    </li>
+
+                </ul>
+
+        </li>
+
+    </ul>
+
+    <!-- END SIDEBAR MENU -->
+
+</div>
+
+<!-- END SIDEBAR -->
+<!-- BEGIN PAGE -->
+@RenderBody()
+
+<!-- END PAGE -->
+@section endScripts{
+    @RenderSection("endScripts", false)
+}

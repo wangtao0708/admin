@@ -1,0 +1,599 @@
+﻿@{
+    ViewBag.Title = "营销管理系统";
+    Layout = "~/Areas/Finance/Views/Shared/_FinanceLayout.cshtml";
+}
+@section endScripts{
+
+    <script type="text/javascript" src="~/content/js/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/content/js/date.js"></script>
+    <script type="text/javascript" src="~/content/js/bootstrap-datepicker.js"></script>
+    <script type="text/javascript" src="~/content/js/daterangepicker.js"></script>
+    <script type="text/javascript" src="~/content/js/datepicker-expand.js"></script>
+    <script type="text/javascript" src="~/content/js/jquery.bootpag.min.js"></script>
+    <script src="~/content/js/SalesPayment.js"></script>
+    <script src="~/content/js/app.js"></script>
+
+    <!-- END PAGE LEVEL SCRIPTS -->
+    <style>
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10100;
+  display: none;
+  float: left;
+  list-style: none;
+  text-shadow: none;
+  padding: 0px;
+  margin: 0px;
+  -webkit-box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  font-family: "Segoe UI",Helvetica, Arial, sans-serif;
+  border: 1px solid #ddd;
+}
+    </style>
+    <script>
+
+    jQuery(document).ready(function () {
+
+        // initiate layout and plugins
+
+
+        // 将form序列化成json对象
+        $.fn.serializeObject = function () {
+            var o = {};
+            var a = this.serializeArray();
+            $.each(a, function () {
+                if (o[this.name]) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                } else {
+                    o[this.name] = this.value || '';
+                }
+            });
+            return o;
+        }
+        App.init();
+        Payment.init();
+        DatePickerExpand.init(App.getDate('@ViewBag.StartTime'), App.getDate('@ViewBag.EndTime'));
+
+        //初始化菜单选择项
+        $("#liReceipt").addClass("active");
+        $("#liAddpayment").addClass("active");
+
+        $("#ReceiptID").change(function () {
+            $("#ReceiptNO").val($(this).text());
+        });
+        var table = $("#receiptList");
+        var tbody = $("#receiptList tbody");
+        $("#selectOrder").click(function () {
+            // 遍历列表，选择选中的行
+            $("#selectReceiptList :checkbox").each(function (index) {
+                if ($(this).attr("checked")=="checked") {
+                    var $tr = $(this).parents("tr");
+                    var id = $tr.find(":checked").val();
+                    // 如果已存在，不再添加
+                    if (tbody.find(":hidden[value='" + id + "']").length == 0) {
+                        var projectName = $tr.children("td:eq(1)").text();
+                        var receiptNo = $tr.children("td:eq(2)").text();
+                        var receiptMoney = $tr.children("td:eq(3)").text();
+                        var paymentMoney = $tr.children("td:eq(4)").text();
+                        var tr = $('<tr>' +
+                            '<td class="hidden-phone">' + projectName + '<input type="hidden" id="ReceiptID" name = "ReceiptID" value="' + id + '"/></td>' +
+                            '<td>' + receiptNo + '</td>' +
+                            '<td>' + receiptMoney + '</td>' +
+                            '<td class="hidden-phone">' + paymentMoney + '</td>' +
+                            '<td style="display:none;"><input type="text" value=""></td>' +
+                            '<td><a href="#" class="btn mini red-stripe" style="min-width:42px;">删除 <i class="icon-remove"></i></a></td>' +
+                            '</tr>');
+                        // 添加行
+                        tbody.append(tr);
+                    }
+                }
+            });
+            bindDelete();
+            changed();
+            $('#myModal').modal('hide');
+        })
+        function bindDelete() {
+            // 添加删除事件
+            tbody.find("a").each(function () {
+                $(this).click(function () {
+                    $(this).parents("tr").remove();
+                    changed();
+                });
+            });
+
+            changed();
+        }
+        // 计算列表中发票总金额，已收款总金额，未收款总金额
+        function aclcReceipt() {
+            var receiptMoneySum = 0, paymentMoneySum = 0, noPaymentMoneySum = 0;
+            tbody.find("tr").each(function () {
+
+                var $tr = $(this);
+                var receiptMoney = $tr.children("td:eq(2)").text().replace("￥","").replace(",","");
+                var paymentMoney = $tr.children("td:eq(3)").text().replace("￥", "").replace(",", "");
+
+                receiptMoneySum += parseFloat(receiptMoney);
+                paymentMoneySum += parseFloat(paymentMoney);
+            });
+            noPaymentMoneySum = receiptMoneySum - paymentMoneySum;
+            $("#receitpMoneySum").val(receiptMoneySum);
+            $("#noPaymentMoneySum").val(noPaymentMoneySum);
+        }
+        function check() {
+            var noPaymentMoneySum = $("#noPaymentMoneySum").val();
+            var paymentMoneySum = $("#paymentMoneySum").val();
+            return noPaymentMoneySum < paymentMoneySum;
+        }
+        function changed() {
+            // 修改未收款总金额
+            aclcReceipt();
+            // 修改本次收款金额
+            //editPayment();
+            
+            var form = $("#receipt-form");
+            form.valid();
+        }
+        $("#paymentMoneySum").change(function () {
+            changed();
+        });
+
+
+        function praseDate(date) {
+            return new Date(date.replace("年", "-").replace("月", "-").replace("日", ""));
+        }
+        // 根据发票金额和收款金额 返回状态
+        function getState(receipt,payment) {
+            if (receipt == payment) {
+                // 已收全款
+                return '<span class="label label-green">已收全款</span>';
+            } else if (payment == 0) {
+                // 未收款
+                return '<span class="label label-red">未收款</span>';
+            } else {
+                // 部分收款
+                var persent = Math.round(payment/receipt*10000)/100;
+                return '<span class="label label-purple">款已到账 ' + persent + '%</span>';
+            }
+        }
+        String.prototype.toDate = function () {
+            var myDate = this;
+            myDate = myDate.replace("年", "-");
+            myDate = myDate.replace("月", "-");
+            myDate = myDate.replace("日", "");
+            return myDate;
+        }
+        // 查询发票列表
+        var form = $("#SearchFrom");
+        function search(pageindex) {
+            pageindex = pageindex || 1;
+            var data = form.serializeObject();
+            data.PageIndex = pageindex;
+            var range = $("#form-date-range span").text().split(" - ");
+            data.StartTime = range[0].toDate();
+            data.EndTime = range[1].toDate();
+            var pageCount = 0;
+            var tbody = $("#selectReceiptList tbody");
+            $.getJSON("GetReceiptList", data, function (data) {
+                pageCount = data.PageCount;
+                tbody.html("");
+                $.each(data.data, function (index) {
+                    var $tr= $(this)[0];
+                    var tr = '<tr>'
+                    + '<td style="width:30px"><input value="' + $tr.ReceiptID + '" type="checkbox" /></td>'
+                    +'<td>' + $tr.ProjectName + '</td>'
+                    +'<td class="hidden-480">' + $tr.ReceiptNO + '</td>'
+                    +'<td class="hidden-480">' + $tr.ReceiptMoney + '</td>'
+                    +'<td>' + $tr.PaymentMoney + '</td>'
+                    +'<td class="hidden-phone">' + $tr.ReceiptTime + '</td>'
+                    + '<td>' + getState($tr.ReceiptMoney, $tr.PaymentMoney) + '</td>'
+                    +'</tr>';
+                    tbody.append(tr);
+                });
+
+                // 设置分页
+                $(".saleOrderIndexPager_content").html("第 " + pageindex + " 页，共 " + Math.ceil(pageCount / 10) + " 页，共 " + pageCount + " 条");
+                $('.saleOrderIndexPager').bootpag({
+                    total: Math.ceil(pageCount / 10),
+                    page: pageindex,
+                    maxVisible: 6
+                }).unbind("page") // 防止重复绑定
+                    .on('page', function (event, num) {
+                    if (pageindex != num) { // 防止死循环
+                        pageindex = num;
+                        search(num);
+                        
+                    }
+                });
+            });
+            
+        }
+        // 查询
+        $("#SearchBtn").click(function () {
+            // 序列化form
+            search();
+        });
+        // 默认绑定第一页
+        search();
+        //
+        $("#addReceipt").click(function () {
+            $('#myModal').modal('show');
+            //submit();
+        });
+
+        // 提交收款
+        $("#btn_Submit").click(function () {
+            var form = $("#receipt-form");
+            if (form.valid()) {
+                var data = form.serializeObject();
+                data.ReceiptID = data.ReceiptID.toString();
+                if (confirm("确认收款？")) {
+                    $.post("PaymentSubmit", data, function (data) {
+                        if (data.state) {
+                            window.location.href = "Index"
+                        } else {
+                            alert(data.msg);
+                        }
+                    });
+                }
+            }
+        });
+
+        $("#Department").change(function () {
+            var deptid = $(this).val();
+
+            var baseUri = document.URL || document.URI;
+            baseUri = baseUri.substring(0, baseUri.indexOf("Finance"));
+            $.getJSON(baseUri + "Sales/SalesOrder/GetEmploysByDeptID?DeptID=" + deptid, function (data) {
+                $("#OwnerEmployee").html('<option value="">所有</option>');
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i].id == "") {
+                        $("#OwnerEmployee").append("<option value=\"" + data[i].id + "\" selected=\"selected\">" + data[i].name + "</option>");
+                    } else {
+                        $("#OwnerEmployee").append("<option value=\"" + data[i].id + "\">" + data[i].name + "</option>");
+                    }
+                }
+            });
+        });
+    });
+
+</script>
+}
+
+<div class="page-content">
+
+
+    <!-- BEGIN PAGE CONTAINER-->
+
+    <div class="container-fluid">
+
+        <!-- BEGIN PAGE HEADER-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <h3 class="page-title">
+
+                    添加收款
+
+                </h3>
+
+            </div>
+
+        </div>
+
+        <!-- END PAGE HEADER-->
+        <!-- BEGIN PAGE CONTENT-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <!-- BEGIN SAMPLE FORM PORTLET-->
+
+                <div class="portlet box blue">
+
+                    <div class="portlet-title">
+
+                        <div class="caption"><i class="icon-reorder"></i>添加收款</div>
+                        <div class="actions">
+
+                            <a id="addReceipt" class="btn green mini" href="#" ><i class="icon-plus"></i>添加发票</a>
+
+                        </div>
+                    </div>
+
+                    <div class="portlet-body form">
+<!-- BEGIN FORM-->
+
+                        <form id="receipt-form" action="~/Finance/Receipt/PaymentSubmit" onsubmit="return false" method="post" class="form-horizontal">
+
+                            <div style="overflow:auto;">
+
+                                <table class="table table-striped table-bordered table-hover table-advance" id="receiptList">
+
+                                    <thead>
+
+                                        <tr>
+
+                                            <th class="hidden-phone">项目名称</th>
+
+                                            <th>发票编号</th>
+
+                                            <th>发票金额</th>
+
+                                            <th class="hidden-phone">已收款金额</th>
+
+                                            <th style="display:none;">收款金额</th>
+
+                                            <th>操作</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody></tbody>
+
+                                </table>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">发票总金额</label>
+
+                                <div class="controls">
+                                    <input id="receitpMoneySum" name="receitpMoneySum" class="m-wrap " type="text" value="0" readonly="readonly" />
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">未收款总金额</label>
+
+                                <div class="controls">
+                                    <input id="noPaymentMoneySum" name="noPaymentMoneySum" class="m-wrap " type="text" value="0" readonly="readonly" />
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">收款金额</label>
+
+                                <div class="controls">
+
+                                    <input id="paymentMoneySum" name="paymentMoneySum" class="m-wrap " type="text" value="0" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">收款时间</label>
+
+                                <div class="controls">
+
+                                    <div class="input-append date date-picker" data-date="@DateTime.Now.ToString("yyyy-MM-dd")" data-date-format="yyyy-mm-dd" data-date-viewmode="years">
+
+                                        <input id="PaymentTime" type="text" class="sapn6 m-wrap" name="PaymentTime" readonly="readonly" />
+                                        <span class="add-on"><i class="icon-calendar"></i></span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="form-actions">
+
+                                <button id="btn_Submit" type="button" class="btn blue">添加</button>
+
+                            </div>
+
+                        </form>
+
+                        <!-- END FORM-->
+
+                    </div>
+
+                </div>
+
+                <!-- END SAMPLE FORM PORTLET-->
+
+            </div>
+
+        </div>
+        <!-- END PAGE CONTENT-->
+
+    </div>
+
+    <!-- END PAGE CONTAINER-->
+
+</div>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+     aria-labelledby="myModalLabel" aria-hidden="true" style="display:none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close"
+                        data-dismiss="modal" aria-hidden="true">
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    选择发票
+                </h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row-fluid">
+
+                    <div class="clearfix" style="margin-top:10px;">
+                        <form id="SearchFrom" action="~/Finance/FinanceOrder/Index" method="post">
+
+                            <div class="pull-left">
+
+                                <span style="text-wrap:avoid">创建日期：</span>
+                                <div id="form-date-range" class="btn" style="margin-right:5px;">
+
+                                    <i class="icon-calendar"></i>
+
+                                    &nbsp;<span></span>
+
+                                    <b class="caret"></b>
+
+                                </div>
+
+                                <input id="StartTime" name="StartTime" type="hidden" value="" />
+                                <input id="EndTime" name="EndTime" type="hidden" value="" />
+                            </div>
+                            @{
+                                if (((List<ITGB.App.Entities.DepartmentEntity>)ViewData["DepartmentList"]).Count > 1)
+                                {
+
+                                    <div class="pull-left" style="margin-right:5px;">
+
+                                        <span style="text-wrap:avoid">选择部门：</span>
+                                        <select id="Department" name="Department" class="m-wrap" tabindex="1">
+
+                                            <option value="" selected>中达金桥技术服务有限公司</option>
+                                            @{
+                                    foreach (ITGB.App.Entities.DepartmentEntity department in (List<ITGB.App.Entities.DepartmentEntity>)ViewData["DepartmentList"])
+                                    {
+                                        if (department.DeptID == ViewBag.DeptID)
+                                        {
+                                            <option value="@department.DeptID" selected>@department.DeptName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@department.DeptID">@department.DeptName</option>
+                                        }
+                                    }
+                                            }
+
+                                        </select>
+
+                                    </div>
+                                }
+
+                                if (((ITGB.App.Entities.EmployeeEntity)ViewData["LoginUser"]).RoleNO != "03")
+                                {
+                                    <div class="pull-left" style="margin-right:5px;">
+
+                                        <span style="text-wrap:avoid">销售人员：</span>
+                                        <select id="OwnerEmployee" name="OwnerEmployee" class="m-wrap" tabindex="1">
+                                            <option value="">所有</option>
+                                            @{
+                                    foreach (var item in (List<ITGB.App.Entities.EmployeeEntity>)ViewData["Employ"])
+                                    {
+                                            <option value="@item.EmployID">@item.EmployName</option>
+                                    }
+                                            }
+                                        </select>
+
+                                    </div>
+                                }
+                            }
+                            <div class="pull-left" style="margin-right:5px;">
+                                <span style="text-wrap:avoid">公司名称：</span>
+                                <select id="Customer" name="Customer" class="m-wrap" tabindex="1">
+
+                                    <option value="0">所有</option>
+                                    @{
+                                        foreach (ITGB.App.Entities.CustomerEntity customer in (List<ITGB.App.Entities.CustomerEntity>)ViewData["CustomerList"])
+                                        {
+                                            if (int.Parse(ViewBag.CustomerID) == customer.CustomerID)
+                                            {
+                                                <option value="@customer.CustomerID" selected>@customer.CustomerName</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@customer.CustomerID">@customer.CustomerName</option>
+                                            }
+                                        }
+                                    }
+
+                                </select>
+                            </div>
+
+                            <div class="pull-left" style="margin-right:5px;">
+
+                                <span style="text-wrap:avoid">发票状态：</span>
+                                <select id="State" name="State" class="m-wrap" tabindex="1">
+
+                                    <option value="0" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(0, int.Parse(ViewBag.State))>所有</option>
+                                    <option value="1" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(1, int.Parse(ViewBag.State))>未收款</option>
+                                    <option value="2" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(2, int.Parse(ViewBag.State))>部分收款</option>
+                                   
+                                </select>
+                            </div>
+                            <div class="pull-left controls" style="margin-right:5px;">
+
+                                <span style="text-wrap:avoid">项目编码：</span>
+                                <input id="ProjectNO" name="ProjectNO" style="height:30px" class="m-wrap" value="@ViewBag.ProjectNO" autocomplete="off" />
+                            </div>
+                            <div class="pull-left" style="margin-left:5px;">
+                                <div id="form-date-range">
+                                    <a id="SearchBtn" href="#" class="btn green">搜索</a>
+                                </div>
+                            </div>
+                        </form> 
+                    </div>
+                </div>
+                <div style="height:5px;"></div>
+                <table class="table table-striped table-bordered table-hover table-advance" id="selectReceiptList">
+
+                    <thead>
+
+                        <tr>
+                            <th></th>
+
+                            <th>项目名称</th>
+
+                            <th class="hidden-480">发票编号</th>
+
+                            <th class="hidden-480">发票金额</th>
+
+                            <th>已收款金额</th>
+
+                            <th class="hidden-phone">开发票时间</th>
+
+                            <th>状态</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    </tbody>
+
+                </table>
+
+                <div class="row-fluid">
+
+                    <div>
+
+                        <p class="saleOrderIndexPager_content">第 0 页，共 0 页，共 0 条</p>
+
+                        <p class="saleOrderIndexPager pagination"></p>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="selectOrder" type="button" class="btn btn-primary">
+                    添加
+                </button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    关闭
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div>
+    </div>

@@ -1,0 +1,406 @@
+﻿@{
+    ViewBag.Title = "营销管理系统";
+    Layout = "~/Areas/Finance/Views/Shared/_FinanceLayout.cshtml";
+    var pageInfo = (ITGB.App.SalesMgmt.BLL.PageInfo<ITGB.App.Entities.ReceiptEntity>)ViewData["PageInfo"];
+}
+
+@model ITGB.App.SalesMgmt.Areas.Finance.Models.ReceiptSerchModel
+@section endScripts{
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+
+    <script type="text/javascript" src="~/content/js/select2.min.js"></script>
+
+    <script type="text/javascript" src="~/content/js/date.js"></script>
+
+    <script type="text/javascript" src="~/content/js/daterangepicker.js"></script>
+    <script type="text/javascript" src="~/content/js/datepicker-expand.js"></script>
+
+    <script type="text/javascript" src="~/content/js/jquery.bootpag.min.js"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+    <!-- BEGIN PAGE LEVEL SCRIPTS -->
+
+    <script src="~/content/js/app.js"></script>
+
+    <script src="~/content/js/table-managed.js"></script>
+
+    <script>
+
+    var trSelectedIndex = -1;
+    $(document).ready(function () {
+        App.init();
+
+        $("#liReceipt").addClass("active");
+        $("#liAllReceipt").addClass("active");
+        // 日期控件开始
+        $("#StartTime").val('@Model.StartTime');
+        $("#EndTime").val('@Model.EndTime');
+        
+        //日历控件
+        DatePickerExpand.init(App.getDate('@Model.StartTime'), App.getDate('@Model.EndTime'));
+        //初始化表格选择
+        $("tbody tr td").click(function () {
+            var index = $(this).parent().index();
+            if (trSelectedIndex == index) {
+                $("#btnEditOrderInfo").addClass("disabled");
+                $("#btnCloseOrderInfo").addClass("disabled");
+                $("#btnOrderInfo").addClass("disabled");
+
+                $("#btnEditOrderInfo").attr("href","#");
+                $("#btnCloseOrderInfo").attr("href","#");
+                $("#btnOrderInfo").attr("href","#");
+
+                $(this).parent().children().removeClass("trSelected");
+                $(this).parent().children().removeClass("trSelected");
+                trSelectedIndex = -1;
+                //判断完结是否存在
+                //获取id，修改导出链接
+            }
+            else {
+
+                $(this).parent().children().addClass("trSelected");
+                $(this).parent().children().addClass("trSelected");
+
+                $(this).parent().parent().children().each(function (i, tr) {
+                    if (i != index) {
+                        $(tr).children().removeClass("trSelected");
+                    }
+                });
+
+                trSelectedIndex = index;
+                //判断编辑是否存在
+                var $tr = $(this).parent();
+                var edit=$tr.find("a[href*='AddReceiptInfo']");
+                if(edit.length>0){
+                    $("#btnEditOrderInfo").attr("href",edit.attr("href")).removeClass("disabled");
+                    $("#btnCloseOrderInfo").attr("href",$tr.find("a[href*='AddPaymentInfo']").attr("href")).removeClass("disabled");
+                }else{
+                    $("#btnEditOrderInfo").addClass("disabled");
+                    $("#btnCloseOrderInfo").addClass("disabled");
+                }
+                var info=$tr.find("a[href*='Details']");
+                $("#btnOrderInfo").attr("href",$tr.find("a[href*='Details']").attr("href")).removeClass("disabled");
+            }
+
+        });
+        $("tbody tr td").css("cursor", "pointer");
+
+
+        $('.saleOrderIndexPager').bootpag({
+            total: @pageInfo.PageCount ,
+            page: @pageInfo.Index ,
+            maxVisible: 6
+        }).on('page', function (event, num) {
+            //$("#saleOrderIndexPager_content").html("第 " + num + " 页，共 "+@pageInfo.Count+" 条");
+            //window.location.href="~/Sales/SalesOrder/Index/"+num;
+            $("#PageIndex").val(num);
+            document.getElementById("SearchFrom").submit();
+        });
+        $("#SearchBtn").click(function(){
+            document.getElementById("SearchFrom").submit();
+        });
+        $("#btnExport").click(function(){
+            var action = $("#SearchFrom").attr("action");
+            var form = $("#SearchFrom").attr("action","Export");
+            form.submit();
+            form.attr("action","Index");
+        });
+
+
+        //绑定销售人员开始http://localhost:5560/Sales/SalesOrder/GetEmploysByDeptID
+        var baseUri = document.URL || document.URI;
+        baseUri = baseUri.substring(0,baseUri.indexOf("Finance"));
+        function bindEmploys(deptid){
+            $.getJSON(baseUri+"Sales/SalesOrder/GetEmploysByDeptID?DeptID="+deptid,function(data){
+                for(var i=0;i<data.length;i++){
+                    if(data[i].id=="@Model.OwnerEmployee"){
+                        $("#OwnerEmployee").append("<option value=\""+data[i].id+"\" selected=\"selected\">"+data[i].name+"</option>");
+                    }else{
+                        $("#OwnerEmployee").append("<option value=\""+data[i].id+"\">"+data[i].name+"</option>");
+                    }
+                }
+            });
+        }
+        $("#Department").change(function(){
+            var deptid = $(this).val();
+            $("#OwnerEmployee").html("<option value=\"\">所有</option>");
+            if(deptid!="0"){
+                bindEmploys(deptid);
+            }
+        });
+
+        bindEmploys("01");
+        //绑定销售人员结束
+    });
+        function deleteReceipt(url){
+            if(window.location.href.indexOf("Receipt/Index")<0){
+                url = "Receipt/"+url;
+            }
+            if(confirm("确认删除发票？")){
+                window.location.href = url;
+            }
+        }
+</script>
+}
+
+<!-- BEGIN PAGE -->
+
+<div class="page-content">
+
+    <div class="container-fluid">
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <h3 class="page-title">
+
+                    所有发票
+
+                </h3>
+
+            </div>
+
+        </div>
+        <!-- BEGIN PAGE CONTAINER-->
+
+        <div class="row-fluid">
+
+            <div class="clearfix" style="margin-top:10px;">
+                <form id="SearchFrom" action="~/Finance/Receipt/Index" method="post">
+                    <input id="PageIndex" name="PageIndex" type="hidden" value="@pageInfo.Index" />
+
+                    @{
+                        if (((List<ITGB.App.Entities.DepartmentEntity>)ViewData["DepartmentList"]).Count > 1)
+                        {
+
+                            <div class="pull-left" style="margin-right:5px;">
+
+                                <span style="text-wrap:avoid">选择部门：</span>
+                                <select id="Department" name="Department" class="m-wrap" tabindex="1">
+
+                                    <option value="" selected>中达金桥技术服务有限公司</option>
+                                    @{
+                            foreach (ITGB.App.Entities.DepartmentEntity department in (List<ITGB.App.Entities.DepartmentEntity>)ViewData["DepartmentList"])
+                            {
+                                if (department.DeptID == Model.Department)
+                                {
+                                    <option value="@department.DeptID" selected>@department.DeptName</option>
+                                }
+                                else
+                                {
+                                    <option value="@department.DeptID">@department.DeptName</option>
+                                }
+                            }
+                                    }
+
+                                </select>
+
+                            </div>
+                        }
+
+                        if (((ITGB.App.Entities.EmployeeEntity)ViewData["Employ"]).RoleNO != "03")
+                        {
+                            <div class="pull-left" style="margin-right:5px;">
+
+                                <span style="text-wrap:avoid">销售人员：</span>
+                                <select id="OwnerEmployee" name="OwnerEmployee" class="m-wrap" tabindex="1">
+                                    <option value="">所有</option>
+                                </select>
+
+                            </div>
+                        }
+                    }
+                    <div class="pull-left" style="margin-right:5px;">
+                        <span style="text-wrap:avoid">公司名称：</span>
+                        <select id="Customer" name="Customer" class="m-wrap" tabindex="1">
+
+                            <option value="0">所有</option>
+                            @{
+                                foreach (ITGB.App.Entities.CustomerEntity customer in (List<ITGB.App.Entities.CustomerEntity>)ViewData["CustomerList"])
+                                {
+                                    if (int.Parse(Model.Customer) == customer.CustomerID)
+                                    {
+                                        <option value="@customer.CustomerID" selected>@customer.CustomerName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@customer.CustomerID">@customer.CustomerName</option>
+                                    }
+                                }
+                            }
+
+                        </select>
+                    </div>
+                    <div class="pull-left controls" style="margin-right:5px; ">
+
+                        <span style="text-wrap:avoid">项目编码：</span>
+                        <input id="ProjectNO" name="ProjectNO" style="height:30px" class="m-wrap" value="@Model.ProjectNO" autocomplete="off" />
+                    </div>
+
+                    <div class="pull-left" style="margin-right:5px;">
+
+                        <span style="text-wrap:avoid">发票状态：</span>
+                        <select id="State" name="State" class="m-wrap" tabindex="1">
+
+                            <option value="0" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(0, int.Parse(Model.State))>所有</option>
+                            <option value="1" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(1, int.Parse(Model.State))>未收款</option>
+                            <option value="2" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(2, int.Parse(Model.State))>部分收款</option>
+                            <option value="3" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(3, int.Parse(Model.State))>全部收款</option>
+                            <option value="4" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(4, int.Parse(Model.State))>已收款</option>
+
+                        </select>
+                    </div>
+
+                    <div class="pull-left">
+
+                        <span style="text-wrap:avoid">开发票时间：</span>
+                        <div id="form-date-range" class="btn" style="margin-right:5px;">
+
+                            <i class="icon-calendar"></i>
+
+                            &nbsp;<span></span>
+
+                            <b class="caret"></b>
+
+                        </div>
+
+                        <input id="StartTime" name="StartTime" type="hidden" value="" />
+                        <input id="EndTime" name="EndTime" type="hidden" value="" />
+                    </div>
+                    <div class="pull-left" style="margin-left:5px;">
+                        <div id="form-date-range">
+                            <a id="SearchBtn" href="#" class="btn green">搜索</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div style="height:5px;"></div>
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <!-- BEGIN EXAMPLE TABLE PORTLET-->
+
+
+                <div class="portlet-body">
+                    
+                    <table class="table table-striped table-bordered table-hover table-advance" id="sample_1">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>项目名称</th>
+
+                                <th class="hidden-480">发票编号</th>
+
+                                <th class="hidden-480">发票金额</th>
+
+                                <th>收款金额</th>
+
+                                <th class="hidden-phone">开发票时间</th>
+
+                                <th>状态</th>
+
+                                <th>详情</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+                            @{
+                                foreach (var item in (List<ITGB.App.Entities.ReceiptEntity>)pageInfo.DataList)
+                                {
+                                    var salesOrder = ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetList(s=>s.SalesOrderID == item.SalesOrderID).FirstOrDefault();
+                                    var PaymentMoney = ITGB.App.SalesMgmt.BLL.PaymentItemsManager.GetList(s => s.ReceiptID == item.ReceiptID).Sum(s => s.PaymentMoney);
+                            <tr>
+                                <td>@salesOrder.ProjectName</td>
+
+                                <td class="hidden-480">@item.ReceiptNO</td>
+
+                                <td class="hidden-480">@ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(item.ReceitpMoney)</td>
+
+                                <td>@ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(PaymentMoney)</td>
+
+                                <td class="hidden-phone">@(item.ReceiptTime == null ? "" : ((DateTime)item.ReceiptTime).ToString("yyyy-MM-dd"))</td>
+
+                                <td>
+                                    @{
+                                    if (item.IsPayment == true)
+                                    {
+                                    <span class="btn mini green" style="cursor:default"> 已收全款</span>
+                                    }
+                                    else if (PaymentMoney == 0)
+                                    {
+                                    <span class="btn mini grey" style="cursor:default"> 未收款</span>
+                                    }
+                                    else
+                                    {
+                                    <span class="btn mini purple" style="cursor:default; white-space: nowrap;"> 款已到帐 @(Math.Round((PaymentMoney) / item.ReceitpMoney * 100, 2))%</span>
+                                    }
+                                    }
+                                </td>
+
+                                <td>
+                                    <a href="~/Finance/Receipt/Details/@item.ReceiptID" class="btn mini red-stripe" style="min-width:42px;">
+                                        详情 <i class="icon-info"></i>
+                                    </a>
+                                    @{
+                                    if (PaymentMoney > 0)
+                                    {
+                                        // 已收款
+                                        <a href="javascript:alert('请先删除收款，再删除发票！')" class="btn mini red-stripe" style="min-width:42px;">
+                                            删除 <i class="icon-info"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        // 未收款
+                                        <a href="javascript:deleteReceipt('Delete/@item.ReceiptID?Department=@Model.Department&Customer=@Model.Customer&PageIndex=@Model.PageIndex&State=@Model.State&StartTime=@Model.StartTime&EndTime=@Model.EndTime&ProjectNO=@Model.ProjectNO')" class="btn mini red-stripe" style="min-width:42px;">
+                                            删除 <i class="icon-info"></i>
+                                        </a>
+                                    }
+}
+                                </td>
+                            </tr>
+                                }
+                            }
+                        </tbody>
+
+                    </table>
+
+                    <div class="row-fluid">
+
+                        <div>
+
+                            总计：<br />
+                            @ViewBag.TotalContent
+                        </div>
+
+                    </div>
+                    <div class="row-fluid">
+
+                        <div>
+
+                            <p class="saleOrderIndexPager_content">第 @pageInfo.Index 页，共 @pageInfo.PageCount 页，共 @pageInfo.Count 条</p>
+
+                            <p class="saleOrderIndexPager pagination"></p>
+                        </div>
+
+                    </div>
+                    
+                </div>
+
+                <!-- END EXAMPLE TABLE PORTLET-->
+
+            </div>
+
+        </div>
+
+        <!-- END PAGE CONTAINER-->
+
+    </div>
+</div>
+
+<!-- END PAGE -->

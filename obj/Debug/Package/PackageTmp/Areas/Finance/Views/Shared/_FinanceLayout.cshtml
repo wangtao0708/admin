@@ -1,0 +1,131 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    if (Session["AccountModel"] == null)
+    {
+        Response.Redirect("~/Account/Login");
+    }
+    else
+    {
+        if ((Session["AccountModel"] as ITGB.App.SalesMgmt.Models.AccountModel).Employ.DeptID != "0103")
+        {
+            Response.Redirect("~/Sales");
+        }
+    }
+}
+
+@section endScripts{
+    @RenderSection("endScripts", false)
+}
+
+<!-- BEGIN SIDEBAR -->
+
+<div class="page-sidebar nav-collapse collapse">
+
+    <!-- BEGIN SIDEBAR MENU -->
+
+    <ul class="page-sidebar-menu">
+
+        <li>
+
+            <!-- BEGIN SIDEBAR TOGGLER BUTTON -->
+
+            <div class="sidebar-toggler hidden-phone"></div>
+
+            <!-- BEGIN SIDEBAR TOGGLER BUTTON -->
+
+        </li>
+
+        <li>
+
+<br />
+        </li>
+
+        <li class="start " id="liHome">
+
+            <a href="~/Finance">
+
+                <i class="icon-home"></i>
+
+                <span class="title">首页</span>
+
+                <span class="selected"></span>
+
+            </a>
+
+        </li>
+
+        <li class="last" id="liOrder">
+
+            <a href="javascript:;">
+
+                <i class="icon-cogs"></i>
+
+                <span class="title">订单</span>
+
+                <span class="arrow "></span>
+
+            </a>
+
+            <ul class="sub-menu">
+
+                <li id="liAllOrders">
+
+                    <a href="~/Finance/FinanceOrder/Index">
+
+                        所有订单
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </li>
+
+        <li class="last" id="liReceipt">
+
+            <a href="javascript:;">
+
+                <i class="icon-cogs"></i>
+
+                <span class="title">发票</span>
+
+                <span class="arrow "></span>
+
+            </a>
+
+            <ul class="sub-menu">
+
+                <li id="liAllReceipt">
+
+                    <a href="~/Finance/Receipt/Index">
+
+                        所有发票
+                    </a>
+
+                </li>
+                <li id="liAddpayment">
+
+                    <a href="~/Finance/Receipt/Addpayment">
+
+                        添加收款
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </li>
+
+    </ul>
+
+    <!-- END SIDEBAR MENU -->
+
+</div>
+
+<!-- END SIDEBAR -->
+<!-- BEGIN PAGE -->
+@RenderBody()
+
+<!-- END PAGE -->

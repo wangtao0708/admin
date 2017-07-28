@@ -1,0 +1,165 @@
+﻿@{
+    ViewBag.Title = "营销管理系统";
+    Layout = "~/Areas/Finance/Views/Shared/_FinanceLayout.cshtml";
+    var order = ViewData["SalesOrder"] as ITGB.App.Entities.SalesOrderEntity;
+}
+@section endScripts{
+
+<script type="text/javascript" src="~/content/js/jquery.validate.min.js"></script>
+<script type="text/javascript" src="~/content/js/bootstrap-datepicker.js"></script>
+<script src="~/content/js/SalesPayment.js"></script>
+<script src="~/content/js/app.js"></script>
+
+<!-- END PAGE LEVEL SCRIPTS -->
+
+<script>
+
+    jQuery(document).ready(function () {
+
+        // initiate layout and plugins
+
+        App.init();
+        Payment.init();
+        //初始化菜单选择项
+        $("#liOrder").addClass("active");
+        $("#liAllOrders").addClass("active");
+
+        $("#ReceiptID").change(function () {
+            $("#ReceiptNO").val($(this).text());
+        });
+
+    });
+
+</script>
+}
+
+<div class="page-content">
+
+
+    <!-- BEGIN PAGE CONTAINER-->
+
+    <div class="container-fluid">
+
+        <!-- BEGIN PAGE HEADER-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <h3 class="page-title">
+
+                    添加收款
+
+                </h3>
+
+            </div>
+
+        </div>
+
+        <!-- END PAGE HEADER-->
+        <!-- BEGIN PAGE CONTENT-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <!-- BEGIN SAMPLE FORM PORTLET-->
+
+                <div class="portlet box blue">
+
+                    <div class="portlet-title">
+
+                        <div class="caption"><i class="icon-reorder"></i>添加收款</div>
+                        
+                    </div>
+
+                    <div class="portlet-body form">
+
+                        <!-- BEGIN FORM-->
+
+                        <form id="receipt-form" action="~/Finance/FinanceOrder/AddPaymentInfoSubmit" method="post" class="form-horizontal">
+
+                            <div class="control-group">
+
+                                <label class="control-label">发票编号</label>
+
+                                <div class="controls">
+
+
+                                    <select id="ReceiptID" name="ReceiptID" class="m-wrap" tabindex="1">
+                                        <option value="0">请选择发票</option>
+                                        @{
+                                            foreach (ITGB.App.Entities.ReceiptEntity receipt in (List<ITGB.App.Entities.ReceiptEntity>)ViewData["ReceiptList"])
+                                            {
+                                                <option value="@receipt.ReceiptID">@receipt.ReceiptNO</option>
+                                            }
+                                        }
+
+                                    </select>
+                                    <input id="ReceiptNO" name="ReceiptNO" type="hidden" class="span6 m-wrap" />
+                                    <input id="SalesOrderID" name="SalesOrderID" type="hidden" class="span6 m-wrap" value="@order.SalesOrderID" />
+                                    <input id="ProjectNO" name="SalesOrderID" type="hidden" class="span6 m-wrap" value="@order.ProjectNO" />
+                                    <input id="ProjectName" name="SalesOrderID" type="hidden" class="span6 m-wrap" value="@order.ProjectName" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">收款金额</label>
+
+                                <div class="controls">
+
+                                    <input id="ReceitpMoney" name="ReceitpMoney" class="m-wrap " type="text" value="" readonly="readonly" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">收款时间</label>
+
+                                <div class="controls">
+
+                                    <div class="input-append date date-picker" data-date="@DateTime.Now.ToString("yyyy-MM-dd")" data-date-format="yyyy-mm-dd" data-date-viewmode="years">
+
+                                        <input id="PaymentTime" type="text" class="sapn6 m-wrap" name="PaymentTime" readonly="readonly" />
+                                        <span class="add-on"><i class="icon-calendar"></i></span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="form-actions">
+
+                                <button id="btn_Submit" type="button" class="btn blue">添加</button>
+
+                                <button type="button" class="btn" onclick="App.goBack()">取消</button>
+
+                            </div>
+
+                        </form>
+
+                        <!-- END FORM-->
+
+                    </div>
+
+                </div>
+
+                <!-- END SAMPLE FORM PORTLET-->
+
+            </div>
+
+        </div>
+        <!-- END PAGE CONTENT-->
+
+    </div>
+
+    <!-- END PAGE CONTAINER-->
+
+</div>
+
+
+

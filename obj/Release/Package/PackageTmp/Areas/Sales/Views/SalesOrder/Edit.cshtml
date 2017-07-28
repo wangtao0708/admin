@@ -1,0 +1,506 @@
+﻿
+@{
+    ViewBag.Title = "营销管理系统";
+    Layout = "~/Areas/Sales/Views/Shared/_SalesLayout.cshtml";
+    var salesEntity = (ITGB.App.Entities.SalesOrderEntity)ViewData["SalesEntity"];
+}
+@section endScripts{
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+
+    <script type="text/javascript" src="~/content/js/jquery.validate.min.js"></script>
+
+    <script type="text/javascript" src="~/content/js/bootstrap-datepicker.js"></script>
+    <script type="text/javascript" src="~/content/js/date.js"></script>
+    <script type="text/javascript" src="~/content/js/additional-methods.min.js"></script>
+    <script type="text/javascript" src="~/content/js/jquery.bootstrap.wizard.min.js"></script>
+    <script src="~/content/js/app.js"></script>
+    <script src="~/content/js/SalesEdit.js"></script>
+
+
+    <script>
+
+        $(document).ready(function () {
+            App.init();
+            SalesEidt.init();
+
+            $("#LiSailOrder").addClass("active");
+            $("#UlLiAllSailOrder").addClass("active");
+
+            $(".order-info").css("display", "none");
+            $("#createUserinfo").find("option:eq(1)").attr("selected", true);
+            $(".control-userinfo").first().val($("#createUserinfo").find("option:selected").text());
+
+            $("#ContactName").val('@salesEntity.Contact.ContactName');
+            
+            if(@((salesEntity.State==3).ToString().ToLower())){
+                $(".order-info").css("display", "block")
+            }
+            if(@((salesEntity.State>=2).ToString().ToLower())){
+                $(".SchemeTime").css("display", "block")
+            }
+
+        });
+
+    </script>
+}
+<!-- BEGIN PAGE -->
+<div class="page-content">
+
+    <!-- BEGIN SAMPLE PORTLET CONFIGURATION MODAL FORM-->
+
+    <div id="portlet-config" class="modal hide">
+
+        <div class="modal-header">
+
+            <button data-dismiss="modal" class="close" type="button"></button>
+
+            <h3>portlet Settings</h3>
+
+        </div>
+
+        <div class="modal-body">
+
+            <p>Here will be a configuration form</p>
+
+        </div>
+
+    </div>
+
+    <!-- END SAMPLE PORTLET CONFIGURATION MODAL FORM-->
+    <!-- BEGIN PAGE CONTAINER-->
+
+    <div class="container-fluid">
+
+        <!-- BEGIN PAGE HEADER-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <h3 class="page-title">
+
+                    编辑销售单
+
+                </h3>
+
+            </div>
+
+        </div>
+
+        <!-- END PAGE HEADER-->
+        <!-- BEGIN PAGE CONTENT-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <!-- BEGIN SAMPLE FORM PORTLET-->
+
+                <div class="portlet box blue">
+
+                    <div class="portlet-title">
+
+                        <div class="caption"><i class="icon-reorder"></i>销售单</div>
+
+                    </div>
+
+                    <div class="portlet-body form">
+
+                        <!-- BEGIN FORM-->
+
+                        <form id="edit_form" action="~/Sales/SalesOrder/EditSubmit" method="post" class="form-horizontal" novalidate="novalidate">
+
+                            <div class="alert alert-error hide">
+
+                                <button class="close" data-dismiss="alert"></button>
+
+                                验证失败，数据输入不正确，请检查
+
+                            </div>
+
+                            <div class="alert alert-success hide">
+
+                                <button class="close" data-dismiss="alert"></button>
+
+                                验证成功！
+
+                            </div>
+                            <h4 class="form-section">销售信息</h4>
+                            <div class="control-group">
+
+                                <label class="control-label">项目名称</label>
+
+                                <div class="controls">
+
+                                    <input id="ProjectName" name="ProjectName" type="text" class="span6 m-wrap" value="@salesEntity.ProjectName" />
+                                    <input id="SalesOrderID" name="SalesOrderID" type="hidden" class="span6 m-wrap" value="@salesEntity.SalesOrderID" />
+                                    <input id="OwnerEmployee" name="OwnerEmployee" type="hidden" class="span6 m-wrap" value="@salesEntity.OwnerEmployee" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">项目编码</label>
+
+                                <div class="controls">
+
+                                    <input id="ProjectNO" name="ProjectNO" type="text" class="span6 m-wrap" value="@salesEntity.ProjectNO" readonly="readonly" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">状态</label>
+
+                                <div class="controls">
+
+                                    <select id="State" name="State" class="span6 chosen" data-placeholder="选择状态" tabindex="1">
+                                        @{
+                                            if (salesEntity.State <= 1) { 
+                                        <option value="1" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(1, salesEntity.State)>销售线索</option>
+                                        }
+                                            if (salesEntity.State <= 2) { 
+                                        <option value="2" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(2, salesEntity.State)>方案确认</option>
+                                        }
+                                        <option value="3" @ITGB.App.SalesMgmt.BLL.SalesOrderManager.GetStateSelected(3, salesEntity.State)>已下订单</option>
+                                        }
+                                    </select>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">经手人</label>
+
+                                <div class="controls">
+
+                                    <input id="Handler" name="Handler" type="text" class="span6 m-wrap" value="@salesEntity.Handler" />
+
+                                </div>
+
+                            </div>
+                            @{
+                                if (salesEntity.State != 3)
+                                {
+                                    
+                            <div class="control-group SchemeTime" style="display:none;">
+
+                                <label class="control-label">方案确认时间<span class="required">*</span></label>
+
+                                <div class="controls">
+
+                                    <div class="input-append date date-picker" data-date-format="yyyy-mm-dd" data-date-viewmode="years">
+
+                                        <input id="SchemeTime" type="text" class="sapn6 m-wrap" name="SchemeTime" value="@(salesEntity.SchemeTime == null ? " " : ((DateTime)salesEntity.SchemeTime).ToString(" yyyy-MM-dd"))" readonly="readonly" />
+                                        <span class="add-on"><i class="icon-calendar"></i></span>
+
+                                    </div>
+
+                                    <span class="text display-value" data-display="OrderTime"></span>
+
+                                </div>
+
+                            </div>
+                                }
+                                else if (salesEntity.State == 3)
+                                {
+                                    
+                            <div class="control-group SchemeTime" style="display:none;">
+
+                                <label class="control-label">方案确认时间<span class="required">*</span></label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @(salesEntity.SchemeTime == null ? " " : ((DateTime)salesEntity.SchemeTime).ToString(" yyyy-MM-dd"))
+                                    </label>                                    
+
+                                </div>
+
+                            </div>
+                                }
+                            }
+                            <div class="control-group">
+
+                                <label class="control-label">金额</label>
+
+                                <div class="controls">
+
+                                    <input id="ProjectMoney" name="ProjectMoney" class="m-wrap " type="text" value="@ITGB.App.SalesMgmt.BLL.Common.DecimalFormart2( salesEntity.ProjectMoney)" />
+
+                                </div>
+
+                            </div>
+
+                            <div class="control-group">
+
+                                <label class="control-label">余额</label>
+
+                                <div class="controls">
+
+                                    <input id="ProjectCost" name="ProjectCost" class="m-wrap " type="text" value="@ITGB.App.SalesMgmt.BLL.Common.DecimalFormart2( salesEntity.ProjectCost)" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">备注</label>
+
+                                <div class="controls">
+
+                                    <textarea id="SalesOrderRemark" name="SalesOrderRemark" class="span6 m-wrap" rows="4">@salesEntity.SalesOrderRemark.Descendants("remark").FirstOrDefault().Value</textarea>
+
+                                </div>
+
+                            </div>
+                            <h4 class="order-info form-section">订单信息</h4>
+                            <div class="order-info control-group">
+
+                                <label class="control-label">下单时间</label>
+
+                                <div class="controls">
+
+                                    <div class="input-append date date-picker" data-date="@((salesEntity.OrderTime??DateTime.Now).ToString("yyyy-MM-dd"))" data-date-format="yyyy-mm-dd" data-date-viewmode="years">
+
+                                        <input id="OrderTime" type="text" class="sapn6 m-wrap" name="OrderTime" value="@(salesEntity.OrderTime == null ? "" : ((DateTime)salesEntity.OrderTime).ToString("yyyy-MM-dd"))" />
+                                        <span class="add-on"><i class="icon-calendar"></i></span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <div class="order-info control-group">
+
+                                <label class="control-label">合同编号</label>
+
+                                <div class="controls">
+
+                                    <input id="ContractNO" name="ContractNO" type="text" class="span6 m-wrap" value="@salesEntity.ContractNO" />
+
+                                </div>
+
+                            </div>
+                            <h4 class="form-section">客户信息</h4>
+                            <div class="control-group">
+
+                                <label class="control-label">公司名称</label>
+
+                                <div class="controls">
+
+                                    <input id="CustomerName" name="CustomerName" type="text" class="span6 m-wrap" value="@salesEntity.Customer.CustomerName" readonly="readonly" />
+                                    <input id="CustomerID" name="CustomerID" type="hidden" class="span6 m-wrap" value="@salesEntity.CustomerID" />
+                                    <input id="CustomerNO" name="CustomerNO" type="hidden" class="span6 m-wrap" value="@salesEntity.Customer.CustomerNO" />
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">地址</label>
+
+                                <div class="controls">
+
+                                    <input id="CustomerAddress" name="CustomerAddress" type="text" class="span6 m-wrap" value="@salesEntity.Customer.CustomerAddress" readonly="readonly" />
+
+                                </div>
+
+                            </div>
+                            @*<div class="control-group">
+
+                                <label class="control-label">公司编码</label>
+
+                                <div class="controls">
+
+                                    <input id="CustomerNO" name="CustomerNO" type="text" class="span6 m-wrap" value="@salesEntity.Customer.CustomerNO" readonly="readonly" />
+
+                                </div>
+
+                            </div>*@
+                            <div class="control-group">
+
+                                <label class="control-label">行业</label>
+
+                                <div class="controls">
+
+                                    <input id="Industry" name="Industry" type="text" class="span6 m-wrap" value="@salesEntity.Customer.Industry" readonly="readonly" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">备注</label>
+
+                                <div class="controls">
+
+                                    <textarea id="CustomerRemark" name="CustomerRemark" class="span6 m-wrap" rows="4" readonly="readonly">@salesEntity.Customer.CustomerRemark.Descendants("remark").FirstOrDefault().Value</textarea>
+
+                                </div>
+
+                            </div>
+
+                            <h4 class="form-section">联系人信息</h4>
+                            <div class="control-group">
+
+                                <label class="control-label">选择联系人</label>
+
+                                <div class="controls">
+
+                                    <select id="ContactID" name="ContactID" class="span6 layout-option m-wrap">
+
+                                        <option value="0" >新建联系人</option>
+
+                                        @{
+                                            foreach (ITGB.App.Entities.ContactEntity contact in (List<ITGB.App.Entities.ContactEntity>)ViewData["ContactsList"])
+                                            {
+                                                if (contact.ContactID == salesEntity.ContactID)
+                                                {
+                                                    <option value="@contact.ContactID" selected>@contact.ContactName</option>
+                                                }
+                                                else
+                                                {
+                                                <option value="@contact.ContactID">@contact.ContactName</option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">姓名</label>
+
+                                <div class="controls">
+
+                                    <input id="ContactName" name="ContactName" type="text" class="span6 m-wrap control-userinfo" value="@salesEntity.Contact.ContactName" />
+                                    
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">邮箱</label>
+
+                                <div class="controls">
+
+                                    <input id="Email" name="Email" type="text" class="span6 m-wrap control-userinfo" value="@salesEntity.Contact.Email" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">电话</label>
+
+                                <div class="controls">
+
+                                    <input id="Phone" name="Phone" type="text" class="span6 m-wrap control-userinfo" value="@salesEntity.Contact.Phone" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">QQ</label>
+
+                                <div class="controls">
+
+                                    <input id="QQ" name="QQ" type="text" class="span6 m-wrap control-userinfo" value="@salesEntity.Contact.QQ" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">微信</label>
+
+                                <div class="controls">
+
+                                    <input id="Weixin" name="Weixin" type="text" class="span6 m-wrap control-userinfo" value="@salesEntity.Contact.Weixin" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">备注</label>
+
+                                <div class="controls">
+
+                                    <textarea id="ContactRemark" name="ContactRemark" class="span6 m-wrap control-userinfo" rows="4" readonly="readonly">@salesEntity.Contact.ContactRemark.Descendants("remark").FirstOrDefault().Value</textarea>
+
+                                </div>
+
+                            </div>
+
+                            <h4 class="form-section">其它信息</h4>
+                            <div class="control-group">
+
+                                <label class="control-label">问题</label>
+
+                                <div class="controls">
+
+                                    <input id="ProjectQuestion" name="ProjectQuestion" type="text" class="span6 m-wrap" value="@salesEntity.SalesOrderRemark.Descendants("question").FirstOrDefault().Value" />
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">备注</label>
+
+                                <div class="controls">
+
+                                    <textarea id="Remark1" name="Remark1" class="span6 m-wrap" rows="4">@salesEntity.SalesOrderRemark.Descendants("remark1").FirstOrDefault().Value</textarea>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">变更原因</label>
+
+                                <div class="controls">
+
+                                    <textarea id="EditReason" name="EditReason" class="span6 m-wrap" rows="4"></textarea>
+
+                                </div>
+
+                            </div>
+
+                            <div class="form-actions">
+
+                                <a id="btn_submit" class="btn blue ">修改</a>
+
+                                <button type="button" class="btn" onclick="App.goBack()">取消</button>
+
+                            </div>
+
+                        </form>
+
+                        <!-- END FORM-->
+
+                    </div>
+
+                </div>
+
+                <!-- END SAMPLE FORM PORTLET-->
+
+            </div>
+
+        </div>
+        <!-- END PAGE CONTENT-->
+
+    </div>
+
+    <!-- END PAGE CONTAINER-->
+
+</div>
+
+<!-- END PAGE -->  

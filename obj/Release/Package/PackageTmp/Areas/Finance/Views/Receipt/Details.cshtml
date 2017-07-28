@@ -1,0 +1,374 @@
+﻿@{
+    ViewBag.Title = "营销管理系统";
+    Layout = "~/Areas/Finance/Views/Shared/_FinanceLayout.cshtml";
+
+    var receipt = (ITGB.App.Entities.ReceiptEntity)ViewData["Receipt"];
+    var payment = (List<ITGB.App.Entities.PaymentEntity>)ViewData["Payment"];
+
+}
+@section endScripts{
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+
+    <script type="text/javascript" src="~/content/js/jquery.dataTables.min.js"></script>
+
+    <script type="text/javascript" src="~/content/js/DT_bootstrap.js"></script>
+    <script src="~/content/js/table-advanced.js"></script>
+    <script src="~/content/js/app.js"></script>
+
+    <style>
+        .close {
+            display: none;
+        }
+    </style>
+    <script>
+
+        $(document).ready(function () {
+            App.init();
+
+            $("#liReceipt").addClass("active");
+            $("#liAllReceipt").addClass("active");
+
+            function open(t) {
+                var next = $(t).next();
+                next.removeClass("close");
+            }
+            function close(t) {
+                var next = $(t).next();
+                next.addClass("close");
+            }
+            function isOpen(t) {
+
+                var next = $(t).next();
+                return next.hasClass("close");
+            }
+            $('#sample_1').on('click', ' tbody td .row-details', function () {
+                var nTr = $(this).parents('tr')[0];
+                if (!isOpen(nTr)) {
+                    /* This row is already open - close it */
+                    $(this).addClass("row-details-close").removeClass("row-details-open");
+                    close(nTr);
+                }
+                else {
+                    /* Open this row */
+                    $(this).addClass("row-details-open").removeClass("row-details-close");
+                    open(nTr)
+                }
+            });
+
+
+            $(".delete").on("click", function (event) {
+                if (!confirm("确认删除收款？"))
+                    return;
+                var $this = $(this);
+                var url = $this.attr("ref");
+                window.location.href = url;
+                event.stopPropagation();
+                return false;
+            });
+        });
+
+        function deletePayment(url) {
+            var e = window.event;
+            if (confirm("确认删除收款？")) {
+                window.location.href = url;
+                //window.location.href = url;
+                window.event.cancelBubble = true;
+            }
+            throw EventException("");
+            var i = 1 / 0;
+            e.stopPropagation();
+        }
+
+        
+    </script>
+}
+<!-- BEGIN PAGE -->
+
+<div class="page-content">
+
+    <!-- BEGIN SAMPLE PORTLET CONFIGURATION MODAL FORM-->
+
+    <div id="portlet-config" class="modal hide">
+
+        <div class="modal-header">
+
+            <button data-dismiss="modal" class="close" type="button"></button>
+
+            <h3>portlet Settings</h3>
+
+        </div>
+
+        <div class="modal-body">
+
+            <p>Here will be a configuration form</p>
+
+        </div>
+
+    </div>
+
+    <!-- END SAMPLE PORTLET CONFIGURATION MODAL FORM-->
+    <!-- BEGIN PAGE CONTAINER-->
+
+    <div class="container-fluid">
+
+        <!-- BEGIN PAGE HEADER-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <h3 class="page-title">
+
+                    发票详情
+
+                </h3>
+
+            </div>
+
+        </div>
+
+        <!-- END PAGE HEADER-->
+        <!-- BEGIN PAGE CONTENT-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <!-- BEGIN SAMPLE FORM PORTLET-->
+
+                <div class="portlet box blue">
+
+                    <div class="portlet-title">
+
+                        <div class="caption"><i class="icon-reorder"></i>发票详情</div>
+
+                    </div>
+
+                    <div class="portlet-body form">
+
+                        <!-- BEGIN FORM-->
+
+                        <form action="Index" class="form-horizontal">
+
+                            <div class="control-group">
+
+                                <label class="control-label">发票编号：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @receipt.ReceiptNO
+                                    </label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">发票金额：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @ITGB.App.SalesMgmt.BLL.Common.DecimalFormart( receipt.ReceitpMoney)
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            <div class="control-group">
+
+                                <label class="control-label">发票状态：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @{
+                                            if (receipt.IsPayment == true)
+                                            {
+                                                // 已收款
+                                        <span class="label label-success">已收款</span>
+                                            }
+                                            else if (ViewBag.PaymentMoney == 0)
+                                            {
+                                                // 未收款
+                                        <span class="label label-default">未收款</span>
+                                            }
+                                            else
+                                            {
+                                                // 部分收款
+                                        <span class="label label-purple">款已到账 @(Math.Round(ViewBag.PaymentMoney / receipt.ReceitpMoney * 100, 2))%</span>
+                                            }
+                                        }
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            <div class="control-group">
+
+                                <label class="control-label">收款金额：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(ViewBag.PaymentMoney)
+                                    </label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">收款公司：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @receipt.IncomeCompany
+                                    </label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">发票类型：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @receipt.ReceiptType
+                                    </label>
+
+                                </div>
+
+                            </div>
+                            <div class="control-group">
+
+                                <label class="control-label">备注：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @receipt.Comment
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            <div class="control-group">
+
+                                <label class="control-label">未收款金额：</label>
+
+                                <div class="controls">
+
+                                    <label class="span12 responsive control-right-label" data-tablet="span12" data-desktop="span8">
+                                        @ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(receipt.ReceitpMoney - ViewBag.PaymentMoney)
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            <h4 class="form-section">收款记录</h4>
+
+
+                            <div class="control-group">
+                                <div class="span8 responsive" data-tablet="span12" data-desktop="span8">
+                                    <table class="table table-striped table-bordered table-hover table-full-width dataTable" id="sample_1" aria-describedby="sample_1_info">
+
+                                        <thead>
+
+                                            <tr role="row">
+                                                <th style="width: 26px;"></th>
+                                                <th>收款金额</th>
+                                                <th>收款时间</th>
+                                                <th>发票数量</th>
+                                                <th>操作</th>
+                                            </tr>
+
+                                        </thead>
+
+
+
+                                        <tbody role="alert" aria-live="polite" aria-relevant="all">
+                                            @{
+                                                foreach (var item in (System.Collections.Generic.List<ITGB.App.Entities.PaymentEntity>)ViewData["Payment"])
+                                                {
+
+                                                    <tr class="odd">
+                                                        <td class=" "><span class="row-details row-details-close"></span></td>
+
+                                                        <td>@ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(item.PaymentMoney)</td>
+
+                                                        <td>@item.PaymentTime.ToString("yyyy-MM-dd")</td>
+
+                                                        <td>@item.RectiptCount</td>
+
+                                                        <td>
+                                                            <a href="javascrpt:void(0)" ref="~/Finance/Receipt/DeletePayment/@item.PaymentID?receipt=@receipt.ReceiptID" class="btn mini red-stripe delete" style="min-width:42px;">
+                                                                删除 <i class="icon-info"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="close">
+                                                        <td class="details" colspan="7">
+                                                            <table class="table table-bordered table-hover table-full-width">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <td>发票编号</td>
+                                                                        <td>收款金额</td>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @{foreach (var subItem in item.PayemntItems)
+                                                                    {
+                                                                    <tr>
+                                                                        <td>@subItem.ReceiptNO</td>
+                                                                        <td>@ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(subItem.PaymentMoney)</td>
+                                                                    </tr>
+                                                                    }
+                                                                    }
+                                                                </tbody>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+
+                            <div class="form-actions">
+
+                                <button type="button" class="btn" onclick="App.goBack()">返回</button>
+
+                            </div>
+
+                        </form>
+
+                        <!-- END FORM-->
+
+                    </div>
+
+                </div>
+
+                <!-- END SAMPLE FORM PORTLET-->
+
+            </div>
+
+        </div>
+        <!-- END PAGE CONTENT-->
+
+    </div>
+    <!-- END PAGE CONTAINER-->
+
+</div>
+<!-- END PAGE -->

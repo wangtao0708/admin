@@ -1,0 +1,606 @@
+﻿
+@{
+    ViewBag.Title = "营销管理系统";
+    Layout = "~/Areas/Sales/Views/Shared/_SalesLayout.cshtml";
+}
+
+@section endScripts{
+    
+<script type="text/javascript" src="~/content/js/jquery.validate.min.js"></script>
+
+<script type="text/javascript" src="~/content/js/additional-methods.min.js"></script>
+
+<script type="text/javascript" src="~/content/js/jquery.bootstrap.wizard.min.js"></script>
+
+<script type="text/javascript" src="~/content/js/chosen.jquery.min.js"></script>
+
+<script type="text/javascript" src="~/content/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="~/content/js/date.js"></script>
+
+<script type="text/javascript" src="~/content/js/select2.min.js"></script>
+
+<script src="~/content/js/app.js"></script>
+
+<script src="~/content/js/SalesCreate.js"></script>
+
+<!-- END PAGE LEVEL SCRIPTS -->
+
+<script>
+
+    jQuery(document).ready(function () {
+
+        // initiate layout and plugins
+
+        App.init();
+
+        SalesCreate.init();
+
+        $("#LiSailOrder").addClass("active");
+        $("#Create").addClass("active");
+
+    });
+
+</script>
+}
+
+<div class="page-content">
+
+   
+    <!-- BEGIN PAGE CONTAINER-->
+
+    <div class="container-fluid">
+
+        <!-- BEGIN PAGE HEADER-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <h3 class="page-title">
+
+                    新建销售机会
+                    
+                </h3>
+
+            </div>
+
+        </div>
+
+        <!-- END PAGE HEADER-->
+        <!-- BEGIN PAGE CONTENT-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <div class="portlet box blue" id="form_wizard_1">
+
+                    <div class="portlet-title">
+
+                        <div class="caption">
+
+                            <i class="icon-reorder"></i> 新建销售机会 - <span class="step-title">Step 1 of 4</span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="portlet-body form">
+
+                        <form action="Create" method="post" class="form-horizontal" id="submit_form" novalidate="novalidate">
+
+                            <div class="form-wizard">
+
+                                <div class="navbar steps">
+
+                                    <div class="navbar-inner">
+
+                                        <ul class="row-fluid">
+
+                                            <li class="span3" >
+
+                                                <a href="#tab1" data-toggle="tab" class="step active">
+
+                                                    <span class="number">1</span>
+
+                                                    <span class="desc"><i class="icon-ok"></i> 客户信息　</span>
+
+                                                </a>
+
+                                            </li>
+
+                                            <li class="span3">
+
+                                                <a href="#tab2" data-toggle="tab" class="step">
+
+                                                    <span class="number">2</span>
+
+                                                    <span class="desc"><i class="icon-ok"></i> 联系人信息</span>
+
+                                                </a>
+
+                                            </li>
+
+                                            <li class="span3">
+
+                                                <a href="#tab3" data-toggle="tab" class="step">
+
+                                                    <span class="number">3</span>
+
+                                                    <span class="desc"><i class="icon-ok"></i> 销售信息　</span>
+
+                                                </a>
+
+                                            </li>
+
+                                            <li class="span3">
+
+                                                <a href="#tab4" data-toggle="tab" class="step">
+
+                                                    <span class="number">4</span>
+
+                                                    <span class="desc"><i class="icon-ok"></i> 　其它　　</span>
+
+                                                </a>
+
+                                            </li>
+
+                                        </ul>
+
+                                    </div>
+
+                                </div>
+
+                                <div id="bar" class="progress progress-success progress-striped">
+
+                                    <div class="bar"></div>
+
+                                </div>
+
+                                <div class="tab-content">
+
+                                    <div class="alert alert-error hide">
+
+                                        <button class="close" data-dismiss="alert"></button>
+
+                                        验证失败，数据输入不正确，请检查
+
+                                    </div>
+
+                                    <div class="alert alert-success hide">
+
+                                        <button class="close" data-dismiss="alert"></button>
+
+                                        验证成功！
+
+                                    </div>
+
+                                    <div class="tab-pane active" id="tab1">
+                                        <h3 class="block">公司信息</h3>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">选择客户<span style="color:#FFF;">*</span></label>
+
+                                            <div class="controls">
+
+                                                <select id="createCompany" class="span6 layout-option m-wrap">
+
+                                                    <option value="0" selected>其他公司</option>
+                                                    @{
+                                                        foreach (ITGB.App.Entities.CustomerEntity customer in (List<ITGB.App.Entities.CustomerEntity>)ViewData["listCustomer"])
+                                                        {
+                                                            <option value="@customer.CustomerID">@customer.CustomerName</option>
+                                                        }
+                                                    }
+                                                </select>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="control-group" tabindex="1">
+
+                                            <label class="control-label">公司名称<span class="required">*</span></label>
+
+                                            <div class="controls">
+                                                <div id="ShowCustomers" style="display:block; z-index:9999; display:none; margin-top:35px; position:absolute; max-height:290px; height:auto;border: 1px solid #e5e5e5; background-color:white; padding:5px; overflow-y:scroll"></div>
+                                                <input id="CustomerName" type="text" class="span6 m-wrap control-cominfo" name="CustomerName" autocomplete="off" />
+                                                <input id="CustomerID" type="hidden" class="span6 m-wrap control-cominfo" name="CustomerID" />
+                                                <input id="CustomerNO" name="CustomerNO" type="hidden" class="span6 m-wrap" value="" />
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+                                        
+                                        <div class="control-group">
+
+                                            <label class="control-label">地址<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="CustomerAddress" type="text" class="span6 m-wrap control-cominfo" name="CustomerAddress" />
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">行业<span class="required">*</span></label>
+
+                                            <div class="controls">
+                                                <select id="Industry" name="Industry" class="span6 layout-option m-wrap control-cominfo" >
+
+                                                    <option value="" selected>请选择行业</option>
+                                                    <option value="IT、通信、电子、互联网">IT、通信、电子、互联网</option>
+                                                    <option value="金融业">金融业</option>
+                                                    <option value="房地产、建筑业">房地产、建筑业</option>
+                                                    <option value="商业服务">商业服务</option>
+                                                    <option value="贸易、批发、零售、租赁业">贸易、批发、零售、租赁业</option>
+                                                    <option value="教育、工艺美术">教育、工艺美术</option>
+                                                    <option value="生产、加工、制造">生产、加工、制造</option>
+                                                    <option value="交通、运输、物流、仓储">交通、运输、物流、仓储</option>
+                                                    <option value="文化、传媒、娱乐、体育">文化、传媒、娱乐、体育</option>
+                                                    <option value="政府、非盈利机构">政府、非盈利机构</option>
+                                                    <option value="农、林、牧、渔">农、林、牧、渔</option>
+                                                    <option value="其他">其他</option>
+                                                </select>
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">备注<span style="color:#FFF;">*</span></label>
+
+                                            <div class="controls">
+
+                                                <textarea id="CustomerRemark" class="span6 m-wrap control-userinfo control-cominfo" rows="3" name="CustomerRemark"></textarea>
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="tab-pane" id="tab2">
+
+                                        <h3 class="block">联系人信息</h3>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">选择联系人<span style="color:#FFF;">*</span></label>
+
+                                            <div class="controls">
+
+                                                <select id="createUserinfo" class="span6 layout-option m-wrap">
+
+                                                    <option value="0" selected>新建联系人</option>
+
+                                                </select>
+
+                                            </div>
+
+                                        </div>
+                                        <div class="control-group">
+
+                                            <label class="control-label">姓名<span class="required">*</span></label>
+                                                <div class="controls">
+                                                    <input id="ContactName" type="text" class="span6 m-wrap form-control control-userinfo" name="ContactName" />
+                                                    <input id="ContactID" type="hidden" class="span6 m-wrap form-control control-userinfo" name="ContactID" />
+                                                    <span class="help-inline"></span>
+                                                </div>
+                                            
+                                        </div>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">邮箱<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="Email" type="text" class="span6 m-wrap form-control control-userinfo" name="Email" />
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">电话<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="Phone" type="text" class="span6 m-wrap form-control control-userinfo" name="Phone" />
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+                                        <div class="control-group">
+
+                                            <label class="control-label">QQ<span style="color:#FFF;">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="QQ" type="text" class="span6 m-wrap form-control control-userinfo" name="QQ" />
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+                                        <div class="control-group">
+
+                                            <label class="control-label">微信<span style="color:#FFF;">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="Weixin" type="text" class="span6 m-wrap form-control control-userinfo" name="Weixin" />
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label ">备注<span style="color:#FFF;">*</span></label>
+
+                                            <div class="controls">
+
+                                                <textarea id="ContactRemark" class="span6 m-wrap control-userinfo" rows="3" name="ContactRemark"></textarea>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="tab-pane" id="tab3">
+
+                                        <h3 class="block">销售信息</h3>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">项目名称<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="ProjectName" type="text" class="span6 m-wrap" name="ProjectName" />
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+                                        <div class="control-group">
+
+                                            <label class="control-label">项目编码<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="ProjectNO" type="text" class="sapn6 m-wrap" name="ProjectNO" />
+                                                <span class="text display-value" data-display="username"></span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">状态<span style="color:#FFF;">*</span></label>
+
+                                            <div class="controls">
+
+                                                <select id="State" class="span6" tabindex="1" name="State">
+
+                                                    <option value="1" selected>销售线索</option>
+                                                    <option value="2">方案确认</option>
+                                                    <option value="3">已下订单</option>
+
+                                                </select>
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+                                        <div class="control-group">
+
+                                            <label class="control-label">经手人<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="Handler" value="@ViewBag.Handler" type="text" class="span6 m-wrap" name="Handler" />
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="control-group SchemeTime" style="display:none;">
+
+                                            <label class="control-label">方案确认时间<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                <div class="input-append date date-picker" data-date-format="yyyy-mm-dd" data-date-viewmode="years">
+
+                                                    <input id="SchemeTime" type="text" class="sapn6 m-wrap" name="SchemeTime" readonly="readonly" />
+                                                    <span class="add-on"><i class="icon-calendar"></i></span>
+
+                                                </div>
+
+                                                <span class="text display-value" data-display="OrderTime"></span>
+
+                                            </div>
+
+                                        </div>
+                                        <div class="control-group">
+
+                                            <label class="control-label">金额<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                    <input id="ProjectMoney" class="m-wrap " type="text" name="ProjectMoney" />
+
+                                                    <span class="help-inline"></span>
+
+                                                </div>
+
+                                        </div>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">余额<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="ProjectCost" class="m-wrap " type="text" name="ProjectCost" />
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+                                        <div class="control-group">
+
+                                            <label class="control-label">备注<span style="color:#FFF;">*</span></label>
+
+                                            <div class="controls">
+
+                                                <textarea id="SalesOrderRemark" class="span6 m-wrap" rows="3" name="SalesOrderRemark"></textarea>
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <h4 class="form-section order-info">订单信息</h4>
+
+                                        <div class="control-group order-info">
+
+                                            <label class="control-label">下单时间<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                <div class="input-append date date-picker" data-date="@DateTime.Now.ToString("yyyy-MM-dd")" data-date-format="yyyy-mm-dd" data-date-viewmode="years">
+
+                                                    <input id="OrderTime" type="text" class="sapn6 m-wrap" name="OrderTime" />
+                                                    <span class="add-on"><i class="icon-calendar"></i></span>
+
+                                                </div>
+
+                                                <span class="text display-value" data-display="OrderTime"></span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="control-group order-info">
+
+                                            <label class="control-label">合同编号<span class="required">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="ContractNO" type="text" class="sapn6 m-wrap" name="ContractNO" />
+                                                <span class="text display-value" data-display="username"></span>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane" id="tab4">
+
+                                        <h3 class="block"> 其他信息</h3>
+
+                                        <div class="control-group">
+
+                                            <label class="control-label">问题<span style="color:#FFF;">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="ProjectQuestion" type="text" class="span6 m-wrap" name="ProjectQuestion" />
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+                                        <div class="control-group">
+
+                                            <label class="control-label">备注<span style="color:#FFF;">*</span></label>
+
+                                            <div class="controls">
+
+                                                <input id="Remark1" type="text" class="span6 m-wrap" name="Remark1" />
+
+                                                <span class="help-inline"></span>
+
+                                            </div>
+
+                                        </div>
+
+
+                                    </div>
+
+                                </div>
+
+                                <div class="form-actions clearfix">
+
+                                    <a href="javascript:;" class="btn button-previous">
+
+                                        <i class="m-icon-swapleft"></i> 上一步
+
+                                    </a>
+
+                                    <a href="javascript:;" class="btn blue button-next">
+
+                                        下一步 <i class="m-icon-swapright m-icon-white"></i>
+
+                                    </a>
+
+                                    <a href="javascript:;" class="btn green button-submit">
+
+                                        提　交 <i class="m-icon-swapright m-icon-white"></i>
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- END PAGE CONTENT-->
+
+    </div>
+
+    <!-- END PAGE CONTAINER-->
+
+</div>
+

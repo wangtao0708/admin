@@ -1,0 +1,399 @@
+﻿@{
+    ViewBag.Title = "营销管理系统";
+    Layout = "~/Areas/Sales/Views/Shared/_SalesLayout.cshtml";
+
+    var employ = (ITGB.App.Entities.EmployeeEntity)ViewBag.Employ;
+}
+@section endScripts{
+
+
+
+    <script src="~/content/js/jquery.flot.js" type="text/javascript"></script>
+
+    <script src="~/content/js/jquery.flot.resize.js" type="text/javascript"></script>
+
+    <script src="~/content/js/jquery.flot.categories.min.js"></script>
+
+    <script src="~/content/js/jquery.pulsate.min.js" type="text/javascript"></script>
+
+    <script src="~/content/js/date.js" type="text/javascript"></script>
+
+    <script src="~/content/js/daterangepicker.js" type="text/javascript"></script>
+
+    <script src="~/content/js/jquery.gritter.js" type="text/javascript"></script>
+
+    <script src="~/content/js/fullcalendar.min.js" type="text/javascript"></script>
+
+    <script src="~/content/js/jquery.easy-pie-chart.js" type="text/javascript"></script>
+
+    <script src="~/content/js/jquery.sparkline.min.js" type="text/javascript"></script>
+    <script src="~/content/js/app.js"></script>
+    <script src="~/content/js/index.js" type="text/javascript"></script>
+    <style>
+        .dashboard-stat {
+            cursor:pointer;
+        }
+    </style>
+    <script>
+
+        jQuery(document).ready(function () {
+
+            // initiate layout and plugins
+
+            App.init();
+            Index.init();
+            $("#LiHome").addClass("active");
+
+            var getReport = function (url) {
+
+                $.ajax({
+                    url: url || "Sales/Report/SalesTargetCompletionJson",
+                    cache: false,
+                    dataType: "json",
+                    data: {},
+                    success: function (data) {
+                        var plot = $.plot($("#placeholder"), data, {
+                            series: {
+                                lines: {
+                                    show: true,
+                                    lineWidth: 2,
+                                    fill: true,
+                                    fillColor: {
+                                        colors: [{
+                                            opacity: 0.05
+                                        }, {
+                                            opacity: 0.01
+                                        }
+                                        ]
+                                    }
+                                },
+                                points: {
+                                    show: true
+                                },
+                                shadowSize: 2
+                            },
+                            grid: {
+                                hoverable: true,
+                                clickable: true,
+                                tickColor: "#eee",
+                                borderWidth: 0
+                            },
+                            colors: ["#d12610", "#37b7f3", "#52e136"],
+                            xaxis: {
+                                mode: "categories",
+                                tickLength: 0
+                            },
+                            yaxis: {
+                                ticks: 11,
+                                tickDecimals: 0
+                            }
+                        });
+                    }
+                });
+            }
+            // 总经理登陆时，显示各销售人员状态对
+            // 市场营销部、技术服务部登陆时：显示年度目标和完成情况
+            //getReport("@(employ.RoleNO == "01" ? "Sales/Report/SalesCompleteJson" : "")");
+            getReport("Sales/Report/SalesTargetCompletionJson");
+
+            function showTooltip(x, y, contents) {
+                $('<div id="tooltip">' + contents + '</div>').css({
+                    position: 'absolute',
+                    display: 'none',
+                    top: y + 5,
+                    left: x + 15,
+                    border: '1px solid #333',
+                    padding: '4px',
+                    color: '#fff',
+                    'border-radius': '3px',
+                    'background-color': '#333',
+                    opacity: 0.80
+                }).appendTo("body").fadeIn(200);
+            }
+
+            var previousPoint = null;
+            $("#placeholder").bind("plothover", function (event, pos, item) {
+                $("#x").text(pos.x.toFixed(2));
+                $("#y").text(pos.y.toFixed(2));
+
+                if (item) {
+                    if (previousPoint != item.dataIndex) {
+                        previousPoint = item.dataIndex;
+
+                        $("#tooltip").remove();
+                        var x = item.datapoint[0].toFixed(2),
+                            y = item.datapoint[1].toFixed(2);
+
+                        showTooltip(item.pageX, item.pageY, item.series.label + " ：￥ " + y);
+                    }
+                } else {
+                    $("#tooltip").remove();
+                    previousPoint = null;
+                }
+            });
+            $(".dashboard-stat").on("click", function () {
+                window.location.href = $(this).attr("href");
+                // 防止冒泡
+                return false;
+            })
+            $(".dashboard-stat .more").on("click", function (event) {
+                window.location.href = $(this).attr("href");
+                // 防止冒泡
+                return false;
+            })
+        }); 
+
+    </script>
+}
+<div class="page-content">
+
+    <!-- BEGIN SAMPLE PORTLET CONFIGURATION MODAL FORM-->
+
+    <div id="portlet-config" class="modal hide">
+
+        <div class="modal-header">
+
+            <button data-dismiss="modal" class="close" type="button"></button>
+
+            <h3>Widget Settings</h3>
+
+        </div>
+
+        <div class="modal-body">
+
+            Widget settings form goes here
+
+        </div>
+
+    </div>
+
+    <!-- END SAMPLE PORTLET CONFIGURATION MODAL FORM-->
+    <!-- BEGIN PAGE CONTAINER-->
+
+    <div class="container-fluid">
+
+        <!-- BEGIN PAGE HEADER-->
+
+        <div class="row-fluid">
+
+            <div class="span12">
+
+                <!-- BEGIN PAGE TITLE & BREADCRUMB-->
+
+                <h3 class="page-title">
+
+                    首页 <small>一目了然的仪表板</small>
+
+                </h3>
+
+                <!-- END PAGE TITLE & BREADCRUMB-->
+
+            </div>
+
+        </div>
+
+        <!-- END PAGE HEADER-->
+
+        <div id="dashboard">
+
+            <!-- BEGIN DASHBOARD STATS -->
+
+            <div class="row-fluid">
+
+                <div id="first" class="span4 responsive" data-tablet="span6" data-desktop="span4">
+
+                    <div class="dashboard-stat yellow" href="Sales/SalesOrder/Index?HomeState=11">
+
+                        <div class="visual">
+
+                            <i class="icon-link"></i>
+
+                        </div>
+
+                        <div class="details">
+
+                            <div class="number">
+
+                                @ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(ViewBag.salesLinesAllMoney)
+
+                            </div>
+
+                            <div class="desc">
+                                历史累计 @ViewBag.salesLinesAllCount 个销售线索
+                            </div>
+
+                        </div>
+
+                        <a class="more" href="Sales/SalesOrder/Index?HomeState=1">
+
+                            本年度新增 @ViewBag.salesLinesSeasonCount 个销售线索 @ITGB.App.SalesMgmt.BLL.Common.DecimalFormart(ViewBag.salesLinesSeasonMoney)<i class="m-icon-swapright m-icon-white"></i>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <div class="span4 responsive" data-tablet="span6" data-desktop="span4">
+
+                    <div class="dashboard-stat blue" href="Sales/SalesOrder/Index?HomeState=12">
+
+                        <div class="visual">
+
+                            <i class="icon-ok"></i>
+
+                        </div>
+
+                        <div class="details">
+
+                            <div class="number">@ViewBag.confirmAllMoney</div>
+
+                            <div class="desc">
+                                历史累计 @ViewBag.confirmAllCount 个方案已确认
+                            </div>
+
+                        </div>
+
+                        <a class="more" href="Sales/SalesOrder/Index?HomeState=2">
+
+                            本年度新增 @ViewBag.confirmSeasonCount 个方案已确认 @ViewBag.confirmSeasonMoney <i class="m-icon-swapright m-icon-white"></i>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <div class="span4 responsive" data-tablet="span6  fix-offset" data-desktop="span4">
+
+                    <div class="dashboard-stat green" href="Sales/SalesOrder/Index?HomeState=13">
+
+                        <div class="visual">
+
+                            <i class="icon-file-text"></i>
+
+                        </div>
+
+                        <div class="details">
+
+                            <div class="number" title="本年度所有 PO 未开发票金额总计">@ViewBag.noReceiptAllMoney</div>
+
+                            <div class="desc">
+                                本年度未开完发票 PO 总计 @ViewBag.noReceiptAllCount 个
+                            </div>
+
+                        </div>
+
+                        <a class="more" href="Sales/SalesOrder/Index?HomeState=3">
+
+                            本季度新增 @ViewBag.noReceiptSeasonCount 个PO还未开完发票 @ViewBag.noReceiptSeasonMoney <i class="m-icon-swapright m-icon-white"></i>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <div class="span4 responsive" data-tablet="span6 " data-desktop="span4 fix-offset">
+
+                    <div class="dashboard-stat purple" href="Sales/SalesOrder/Index?HomeState=14">
+
+                        <div class="visual">
+
+                            <i class="icon-bar-chart"></i>
+
+                        </div>
+
+                        <div class="details">
+
+                            <div class="number" title="本年度所有PO已开发票金额总计">@ViewBag.hasReceiptYearMoney</div>
+
+                            <div class="desc">
+                                本年度已开发票 PO 总计 @ViewBag.hasReceiptYearCount 个
+                            </div>
+
+                        </div>
+
+                        <a class="more" href="Sales/SalesOrder/Index?HomeState=4">
+
+                            本季度新增 @ViewBag.hasReceiptSeasonCount 个 PO 已开完发票 @ViewBag.hasReceiptSeasonMoney <i class="m-icon-swapright m-icon-white"></i>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <div class="span4 responsive" data-tablet="span6  fix-offset" data-desktop="span4">
+
+                    <div class="dashboard-stat light-blue" href="Sales/SalesOrder/Index?HomeState=15">
+
+                        <div class="visual">
+
+                            <i class="icon-shopping-cart"></i>
+
+                        </div>
+
+                        <div class="details">
+
+                            <div class="number" title="本年度所有未收款发票金额总计">@ViewBag.noPaymentAllMoney</div>
+
+                            <div class="desc">
+                                本年度含未收款发票PO总计 @ViewBag.noPaymentAllCount 个
+                            </div>
+
+                        </div>
+
+                        <a class="more" href="Sales/SalesOrder/Index?HomeState=5">
+
+                            本季度含未收款发票PO总计 @ViewBag.noPaymentSeasonCount 个 @ViewBag.noPaymentSeasonMoney <i class="m-icon-swapright m-icon-white"></i>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- END DASHBOARD STATS -->
+
+            <div class="clearfix"></div>
+
+            <div class="row-fluid">
+
+                <div class="span12">
+
+                    <!-- BEGIN PORTLET-->
+
+                    <div class="portlet solid bordered light-grey">
+
+                        <div class="portlet-title">
+
+                            <div class="caption"><i class="icon-bar-chart"></i>季度目标与实际完成情况（@ViewBag.LoginUser）</div>
+
+                        </div>
+
+                        <div class="portlet-body">
+
+                            <div id="placeholder" class="chart"></div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- END PORTLET-->
+
+                </div>
+
+            </div>
+
+            <div class="clearfix"></div>
+
+        </div>
+
+    </div>
+
+    <!-- END PAGE CONTAINER-->
+
+</div>
